@@ -1,0 +1,6 @@
+{
+  "name": "5R Pro Audit",
+  "description": "Professional 5R Internal Audit tool for Warehouse and Office compliance, featuring AI-powered Kaizen analysis and performance visualization.",
+  "requestFramePermissions": [],
+  "prompt": "Create a professional internal audit app for 5R (Ringkas, Rapih, Resik, Rawat, Rajin) methodology. Include scoring, radar charts, and AI-driven improvement suggestions."
+}
