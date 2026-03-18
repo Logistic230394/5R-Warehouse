@@ -45,7 +45,7 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
           cy={centerY}
           r={(radius * level) / maxValue}
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
+          stroke="rgba(64, 224, 208, 0.1)"
           strokeWidth="1"
         />
       ))}
@@ -60,7 +60,7 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
             y1={centerY}
             x2={coords.x}
             y2={coords.y}
-            stroke="rgba(255,255,255,0.1)"
+            stroke="rgba(64, 224, 208, 0.1)"
             strokeWidth="1"
           />
         );
@@ -69,8 +69,8 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
       {/* Data polygon */}
       <polygon
         points={points}
-        fill="rgba(255, 255, 255, 0.2)"
-        stroke="rgba(255, 255, 255, 0.8)"
+        fill="rgba(45, 212, 191, 0.3)"
+        stroke="#2dd4bf"
         strokeWidth="2"
       />
 
@@ -84,7 +84,7 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
             y={coords.y}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="rgba(255,255,255,0.6)"
+            fill="white"
             fontSize="10px"
             fontWeight="600"
           >

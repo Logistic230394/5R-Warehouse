@@ -7,6 +7,8 @@
 import { GoogleGenAI } from '@google/genai';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { AuditSession, AuditCategory } from './types';
 import { KRITERIA_5R, INITIAL_PLACEHOLDERS } from './constants';
@@ -20,7 +22,8 @@ import {
     SparklesIcon, 
     ArrowUpIcon, 
     GridIcon,
-    CodeIcon
+    CodeIcon,
+    FileTextIcon
 } from './components/Icons';
 
 function App() {
@@ -34,6 +37,7 @@ function App() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const startAudit = () => {
     if (!auditorName || !auditArea) return;
@@ -78,42 +82,9 @@ function App() {
     };
 
     setCurrentSession(newSession);
+    setSessions(prev => [newSession, ...prev]);
     setView('results');
-
-    // Generate AI Insights
-    try {
-        const apiKey = process.env.API_KEY;
-        if (!apiKey) return;
-        const ai = new GoogleGenAI({ apiKey });
-        
-        const prompt = `
-Analyze these 5R Audit results for the area: "${auditArea}".
-Auditor: ${auditorName}
-Scores (1-5 scale):
-${Object.entries(categoryAverages).map(([k, v]) => `- ${k}: ${v.toFixed(2)}`).join('\n')}
-
-**Task:**
-1. Provide a concise overall summary of the warehouse's 5R health.
-2. Identify the weakest "R" and suggest 3 specific Kaizen (continuous improvement) actions to fix it.
-3. Highlight one strength found.
-4. Keep the tone professional, encouraging, and actionable.
-Format as clean Markdown.
-        `.trim();
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview',
-            contents: [{ role: 'user', parts: [{ text: prompt }] }]
-        });
-
-        const insights = response.text || "Unable to generate insights at this time.";
-        const updatedSession = { ...newSession, aiInsights: insights };
-        setCurrentSession(updatedSession);
-        setSessions(prev => [updatedSession, ...prev]);
-    } catch (e) {
-        console.error("AI Insights failed", e);
-    } finally {
-        setIsLoading(false);
-    }
+    setIsLoading(false);
   };
 
   const downloadReport = () => {
@@ -127,15 +98,44 @@ Format as clean Markdown.
     downloadAnchorNode.remove();
   };
 
+  const downloadPDF = async () => {
+    if (!resultsRef.current || !currentSession) return;
+    
+    setIsLoading(true);
+    try {
+        const element = resultsRef.current;
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#09090b', // Match app background
+            logging: false,
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`Audit_Report_${currentSession.area}_${currentSession.date.replace(/\//g, '-')}.pdf`);
+    } catch (error) {
+        console.error("PDF generation failed", error);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
   return (
     <>
         <div className="immersive-app">
             <DottedGlowBackground 
                 gap={24} 
                 radius={1.5} 
-                color="rgba(255, 255, 255, 0.02)" 
-                glowColor="rgba(255, 255, 255, 0.1)" 
-                speedScale={0.3} 
+                color="rgba(135, 206, 235, 0.1)" 
+                glowColor="rgba(64, 224, 208, 0.3)" 
+                speedScale={0.2} 
             />
 
             {view === 'welcome' && (
@@ -240,71 +240,92 @@ Format as clean Markdown.
             )}
 
             {view === 'results' && currentSession && (
-                <div className="audit-stage results-view">
-                    <div className="results-grid">
-                        <div className="results-main">
-                            <div className="results-header">
-                                <div className="summary-info">
-                                    <h1>Audit Report</h1>
-                                    <p>{currentSession.area} • {currentSession.date}</p>
-                                </div>
-                                <div className="total-score-box">
-                                    <span className="score-val">{currentSession.totalAverage.toFixed(2)}</span>
-                                    <span className="score-label">Average Score</span>
+                <div className="audit-stage results-view" ref={resultsRef}>
+                    <div className="results-container">
+                        <div className="results-header">
+                            <div className="summary-info">
+                                <span className="badge">LAPORAN AUDIT 5R</span>
+                                <h1>{currentSession.area}</h1>
+                                <div className="meta-grid">
+                                    <div className="meta-item">
+                                        <span className="meta-label">Auditor</span>
+                                        <span className="meta-value">{currentSession.auditor}</span>
+                                    </div>
+                                    <div className="meta-item">
+                                        <span className="meta-label">Tanggal</span>
+                                        <span className="meta-value">{currentSession.date}</span>
+                                    </div>
+                                    <div className="meta-item">
+                                        <span className="meta-label">ID Audit</span>
+                                        <span className="meta-value">#{currentSession.id}</span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="ai-insights-container">
-                                <div className="section-title">
-                                    <SparklesIcon /> AI Smart Insights
-                                </div>
-                                {isLoading ? (
-                                    <div className="ai-loading">
-                                        <ThinkingIcon /> Analyzing performance patterns...
-                                    </div>
-                                ) : (
-                                    <div className="ai-content markdown">
-                                        {currentSession.aiInsights}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="actions-footer">
-                                <button className="outline-button" onClick={() => setView('welcome')}>
-                                    <ArrowUpIcon style={{transform: 'rotate(-90deg)'}} /> New Audit
-                                </button>
-                                <button className="outline-button" onClick={downloadReport}>
-                                    <CodeIcon /> Export JSON
-                                </button>
-                                <button className="outline-button" onClick={() => setDrawerOpen(true)}>
-                                    <GridIcon /> History
-                                </button>
+                            <div className="total-score-box">
+                                <span className="score-val">{currentSession.totalAverage.toFixed(2)}</span>
+                                <span className="score-label">Skor Rata-rata</span>
                             </div>
                         </div>
 
-                        <div className="results-sidebar">
-                            <div className="radar-container">
-                                <h3>Performance Visual</h3>
-                                <RadarChart 
-                                    data={Object.entries(currentSession.averages).map(([k, v]) => ({ label: k, value: v }))} 
-                                    size={340}
-                                />
+                        <div className="performance-visual-section">
+                            <div className="visual-card radar-card">
+                                <div className="section-header">
+                                    <SparklesIcon />
+                                    <h3>Visualisasi Performa</h3>
+                                </div>
+                                <div className="radar-wrapper">
+                                    <RadarChart 
+                                        data={Object.entries(currentSession.averages).map(([k, v]: [string, any]) => ({ label: k, value: v }))} 
+                                        size={400}
+                                    />
+                                </div>
                             </div>
-                            
-                            <div className="score-breakdown">
-                                <h3>Breakdown</h3>
-                                {Object.entries(currentSession.averages).map(([cat, val]) => (
-                                    <div key={cat} className="breakdown-item">
-                                        <div className="breakdown-label">
-                                            <span>{cat}</span>
-                                            <span>{val.toFixed(1)}/5.0</span>
+
+                            <div className="visual-card breakdown-card">
+                                <div className="section-header">
+                                    <GridIcon />
+                                    <h3>Breakdown Kategori</h3>
+                                </div>
+                                <div className="detailed-breakdown">
+                                    {Object.entries(currentSession.averages).map(([cat, val]: [string, any]) => (
+                                        <div key={cat} className="detailed-item">
+                                            <div className="item-info">
+                                                <span className="cat-name">{cat}</span>
+                                                <span className="cat-score">{val.toFixed(2)} / 5.00</span>
+                                            </div>
+                                            <div className="progress-track">
+                                                <div 
+                                                    className="progress-bar" 
+                                                    style={{ 
+                                                        width: `${(val / 5) * 100}%`,
+                                                        backgroundColor: val >= 4 ? '#2dd4bf' : val >= 3 ? '#87ceeb' : '#f87171'
+                                                    }} 
+                                                />
+                                            </div>
+                                            <p className="cat-desc">
+                                                {val >= 4 ? 'Sangat Baik - Pertahankan standar.' : 
+                                                 val >= 3 ? 'Cukup - Perlu peningkatan minor.' : 
+                                                 'Kurang - Memerlukan tindakan segera.'}
+                                            </p>
                                         </div>
-                                        <div className="progress-bg">
-                                            <div className="progress-fill" style={{ width: `${(val / 5) * 100}%` }} />
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+                        </div>
+
+                        <div className="actions-footer" data-html2canvas-ignore>
+                            <button className="outline-button" onClick={() => setView('welcome')}>
+                                <ArrowUpIcon style={{transform: 'rotate(-90deg)'}} /> Audit Baru
+                            </button>
+                            <button className="outline-button" onClick={downloadReport}>
+                                <CodeIcon /> Ekspor JSON
+                            </button>
+                            <button className="outline-button" onClick={downloadPDF}>
+                                <FileTextIcon /> Ekspor PDF
+                            </button>
+                            <button className="outline-button" onClick={() => setDrawerOpen(true)}>
+                                <GridIcon /> Riwayat
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -338,6 +359,10 @@ Format as clean Markdown.
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement);
-  root.render(<React.StrictMode><App /></React.StrictMode>);
+  // Use a global variable to persist the root across re-renders/HMR-like scenarios
+  const globalAny = window as any;
+  if (!globalAny.__reactRoot) {
+    globalAny.__reactRoot = ReactDOM.createRoot(rootElement);
+  }
+  globalAny.__reactRoot.render(<React.StrictMode><App /></React.StrictMode>);
 }
