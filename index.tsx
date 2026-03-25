@@ -17,7 +17,6 @@ import { generateId } from './utils';
 import DottedGlowBackground from './components/DottedGlowBackground';
 import SideDrawer from './components/SideDrawer';
 import RadarChart from './components/RadarChart';
-import Header from './components/Header';
 import { 
     ThinkingIcon, 
     SparklesIcon, 
@@ -105,11 +104,17 @@ function App() {
     setIsLoading(true);
     try {
         const element = resultsRef.current;
+        
+        // Use a higher scale for better quality, and ensure we capture the full element
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,
-            backgroundColor: '#09090b', // Match app background
+            backgroundColor: '#004d4d', // Use a solid color that matches the theme for PDF
             logging: false,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight
         });
         
         const imgData = canvas.toDataURL('image/png');
@@ -140,11 +145,13 @@ function App() {
                 glowColor="rgba(64, 224, 208, 0.3)" 
                 speedScale={0.2} 
             />
-            <Header />
 
             {view === 'welcome' && (
                 <div className="audit-stage center-flex">
                     <div className="hero-content">
+                        <div className="app-logo">
+                            <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
+                        </div>
                         <div className="badge">5R COMPLIANCE</div>
                         <h1>5R Internal Audit</h1>
                         <p>Warehouse RM Technical & FG Herbisida</p>
@@ -183,6 +190,9 @@ function App() {
             {view === 'form' && (
                 <div className="audit-stage">
                     <div className="form-wizard">
+                        <div className="app-logo small">
+                            <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
+                        </div>
                         <div className="wizard-header">
                             <div className="step-indicator">
                                 {KRITERIA_5R.map((cat, i) => (
@@ -257,19 +267,30 @@ function App() {
             )}
 
             {view === 'results' && currentSession && (
-                <div className="audit-stage results-view" ref={resultsRef}>
-                    <div className="results-container">
+                <div className="audit-stage results-view">
+                    <div className="results-container" ref={resultsRef}>
                         <div className="results-header">
                             <div className="summary-info">
-                                <span className="badge">LAPORAN AUDIT 5R</span>
-                                <h1>{currentSession.area}</h1>
+                                <div className="results-title-area">
+                                    <div className="app-logo tiny">
+                                        <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
+                                    </div>
+                                    <div>
+                                        <span className="badge">LAPORAN AUDIT 5R</span>
+                                        <h1>{currentSession.area}</h1>
+                                    </div>
+                                </div>
                                 <div className="meta-grid">
                                     <div className="meta-item">
-                                        <span className="meta-label">Auditor</span>
+                                        <span className="meta-label">Auditor Name</span>
                                         <span className="meta-value">{currentSession.auditor}</span>
                                     </div>
                                     <div className="meta-item">
-                                        <span className="meta-label">Tanggal</span>
+                                        <span className="meta-label">Audit Area</span>
+                                        <span className="meta-value">{currentSession.area}</span>
+                                    </div>
+                                    <div className="meta-item">
+                                        <span className="meta-label">Tanggal Audit</span>
                                         <span className="meta-value">{currentSession.date}</span>
                                     </div>
                                     <div className="meta-item">

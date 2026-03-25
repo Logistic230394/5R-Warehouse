@@ -7,21 +7,21 @@ const Header = () => {
             <div className="header-container">
                 <div className="logo-wrapper">
                     <img 
-                        src="https://files.oaiusercontent.com/file-9A8B7C6D5E4F3G2H1I0J" 
-                        alt="Inti Everspring Logo" 
-                        className="header-logo logo-inti"
+                        src="https://api.dicebear.com/7.x/initials/svg?seed=5R&backgroundColor=2dd4bf&fontFamily=Inter&fontWeight=700" 
+                        alt="5R Logo" 
+                        className="header-logo logo-5r"
                         referrerPolicy="no-referrer"
                     />
                 </div>
                 <div className="header-title">
-                    <span className="title-main">5R AUDIT INTERNAL</span>
+                    <span className="title-main">5R PRO AUDIT</span>
                     <span className="title-sub">SYSTEM</span>
                 </div>
                 <div className="logo-wrapper">
                     <img 
-                        src="https://files.oaiusercontent.com/file-7Z8X9Y0A1B2C3D4E5F6G7H8I" 
-                        alt="WH Logo" 
-                        className="header-logo logo-wh"
+                        src="https://api.dicebear.com/7.x/initials/svg?seed=IE&backgroundColor=0f172a&fontFamily=Inter&fontWeight=700" 
+                        alt="Inti Everspring Logo" 
+                        className="header-logo logo-circular"
                         referrerPolicy="no-referrer"
                     />
                 </div>
