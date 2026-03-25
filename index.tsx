@@ -37,7 +37,24 @@ function App() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [chartSize, setChartSize] = useState(400);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 480) {
+        setChartSize(width - 60);
+      } else if (width < 768) {
+        setChartSize(320);
+      } else {
+        setChartSize(400);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const startAudit = () => {
     if (!auditorName || !auditArea) return;
@@ -105,26 +122,88 @@ function App() {
     try {
         const element = resultsRef.current;
         
-        // Use a higher scale for better quality, and ensure we capture the full element
+        // Capture the full content of the results view with optimized scale for compression
         const canvas = await html2canvas(element, {
-            scale: 2,
+            scale: 1.5, // Reduced scale to keep file size manageable
             useCORS: true,
-            backgroundColor: '#004d4d', // Use a solid color that matches the theme for PDF
+            backgroundColor: '#004d4d', // Match app background
             logging: false,
+            // Force a desktop-like width for the capture to ensure "normal" layout
+            windowWidth: 1200,
             scrollX: 0,
             scrollY: 0,
-            windowWidth: element.scrollWidth,
-            windowHeight: element.scrollHeight
+            onclone: (clonedDoc) => {
+                const clonedElement = clonedDoc.querySelector('.results-view') as HTMLElement;
+                const clonedContainer = clonedDoc.querySelector('.results-container') as HTMLElement;
+                const clonedRadar = clonedDoc.querySelector('.radar-chart-svg') as SVGElement;
+                
+                if (clonedElement) {
+                    clonedElement.style.width = '1200px';
+                    clonedElement.style.overflow = 'visible';
+                    clonedElement.style.height = 'auto';
+                    clonedElement.style.padding = '40px';
+                    clonedElement.style.position = 'relative';
+                    clonedElement.scrollTop = 0;
+                }
+
+                if (clonedContainer) {
+                    clonedContainer.style.width = '1000px';
+                    clonedContainer.style.margin = '0 auto';
+                    // Force grid to 2 columns even on mobile export
+                    const visualSection = clonedContainer.querySelector('.performance-visual-section') as HTMLElement;
+                    if (visualSection) {
+                        visualSection.style.display = 'grid';
+                        visualSection.style.gridTemplateColumns = '1fr 1fr';
+                        visualSection.style.gap = '32px';
+                    }
+                    
+                    // Force header to horizontal layout
+                    const header = clonedContainer.querySelector('.results-header') as HTMLElement;
+                    if (header) {
+                        header.style.display = 'flex';
+                        header.style.flexDirection = 'row';
+                        header.style.justifyContent = 'space-between';
+                        header.style.alignItems = 'flex-start';
+                        header.style.textAlign = 'left';
+                    }
+
+                    const metaGrid = clonedContainer.querySelector('.meta-grid') as HTMLElement;
+                    if (metaGrid) {
+                        metaGrid.style.display = 'grid';
+                        metaGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                    }
+                }
+
+                // Ensure radar chart is at its full size in the PDF
+                if (clonedRadar) {
+                    clonedRadar.setAttribute('width', '400');
+                    clonedRadar.setAttribute('height', '400');
+                }
+            }
         });
         
-        const imgData = canvas.toDataURL('image/png');
+        // Use JPEG with 0.7 quality for significant compression while maintaining readability
+        const imgData = canvas.toDataURL('image/jpeg', 0.7);
         const pdf = new jsPDF({
             orientation: 'landscape',
-            unit: 'px',
-            format: [canvas.width, canvas.height]
+            unit: 'mm',
+            format: 'a4',
+            compress: true // Enable internal PDF compression
         });
         
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+        const imgWidth = imgProps.width * ratio;
+        const imgHeight = imgProps.height * ratio;
+        
+        // Center the image on the PDF page
+        const xOffset = (pdfWidth - imgWidth) / 2;
+        const yOffset = (pdfHeight - imgHeight) / 2;
+        
+        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgWidth, imgHeight, undefined, 'FAST');
         pdf.save(`Audit_Report_${currentSession.area}_${currentSession.date.replace(/\//g, '-')}.pdf`);
     } catch (error) {
         console.error("PDF generation failed", error);
@@ -149,9 +228,6 @@ function App() {
             {view === 'welcome' && (
                 <div className="audit-stage center-flex">
                     <div className="hero-content">
-                        <div className="app-logo">
-                            <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
-                        </div>
                         <div className="badge">5R COMPLIANCE</div>
                         <h1>5R Internal Audit</h1>
                         <p>Warehouse RM Technical & FG Herbisida</p>
@@ -190,9 +266,6 @@ function App() {
             {view === 'form' && (
                 <div className="audit-stage">
                     <div className="form-wizard">
-                        <div className="app-logo small">
-                            <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
-                        </div>
                         <div className="wizard-header">
                             <div className="step-indicator">
                                 {KRITERIA_5R.map((cat, i) => (
@@ -267,30 +340,19 @@ function App() {
             )}
 
             {view === 'results' && currentSession && (
-                <div className="audit-stage results-view">
-                    <div className="results-container" ref={resultsRef}>
+                <div className="audit-stage results-view" ref={resultsRef}>
+                    <div className="results-container">
                         <div className="results-header">
                             <div className="summary-info">
-                                <div className="results-title-area">
-                                    <div className="app-logo tiny">
-                                        <img src="https://drive.google.com/uc?id=1VNPwTZqjFMbYhfquPHiFeAyQMTKpw0H0" alt="WH Logo" referrerPolicy="no-referrer" />
-                                    </div>
-                                    <div>
-                                        <span className="badge">LAPORAN AUDIT 5R</span>
-                                        <h1>{currentSession.area}</h1>
-                                    </div>
-                                </div>
+                                <span className="badge">LAPORAN AUDIT 5R</span>
+                                <h1>{currentSession.area}</h1>
                                 <div className="meta-grid">
                                     <div className="meta-item">
-                                        <span className="meta-label">Auditor Name</span>
+                                        <span className="meta-label">Auditor</span>
                                         <span className="meta-value">{currentSession.auditor}</span>
                                     </div>
                                     <div className="meta-item">
-                                        <span className="meta-label">Audit Area</span>
-                                        <span className="meta-value">{currentSession.area}</span>
-                                    </div>
-                                    <div className="meta-item">
-                                        <span className="meta-label">Tanggal Audit</span>
+                                        <span className="meta-label">Tanggal</span>
                                         <span className="meta-value">{currentSession.date}</span>
                                     </div>
                                     <div className="meta-item">
@@ -314,7 +376,7 @@ function App() {
                                 <div className="radar-wrapper">
                                     <RadarChart 
                                         data={Object.entries(currentSession.averages).map(([k, v]: [string, any]) => ({ label: k, value: v }))} 
-                                        size={400}
+                                        size={chartSize}
                                     />
                                 </div>
                             </div>
