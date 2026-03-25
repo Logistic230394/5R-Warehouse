@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import { GoogleGenAI } from '@google/genai';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 import { AuditSession, AuditCategory } from './types';
-import { KRITERIA_5R, INITIAL_PLACEHOLDERS } from './constants';
+import { KRITERIA_5R } from './constants';
 import { generateId } from './utils';
 
 import DottedGlowBackground from './components/DottedGlowBackground';
@@ -459,10 +458,6 @@ function App() {
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  // Use a global variable to persist the root across re-renders/HMR-like scenarios
-  const globalAny = window as any;
-  if (!globalAny.__reactRoot) {
-    globalAny.__reactRoot = ReactDOM.createRoot(rootElement);
-  }
-  globalAny.__reactRoot.render(<React.StrictMode><App /></React.StrictMode>);
+  const root = createRoot(rootElement);
+  root.render(<React.StrictMode><App /></React.StrictMode>);
 }
