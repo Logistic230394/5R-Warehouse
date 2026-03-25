@@ -17,6 +17,7 @@ import { generateId } from './utils';
 import DottedGlowBackground from './components/DottedGlowBackground';
 import SideDrawer from './components/SideDrawer';
 import RadarChart from './components/RadarChart';
+import Header from './components/Header';
 import { 
     ThinkingIcon, 
     SparklesIcon, 
@@ -43,7 +44,7 @@ function App() {
     if (!auditorName || !auditArea) return;
     const initialScores: Record<string, number[]> = {};
     KRITERIA_5R.forEach(cat => {
-        initialScores[cat.name] = cat.questions.map(() => 3);
+        initialScores[cat.name] = cat.questions.map(() => 0); // Start with 0 (unscored)
     });
     setScores(initialScores);
     setView('form');
@@ -127,6 +128,8 @@ function App() {
     }
   };
 
+  const isStepComplete = scores[KRITERIA_5R[currentStep]?.name]?.every(s => s > 0);
+
   return (
     <>
         <div className="immersive-app">
@@ -137,6 +140,7 @@ function App() {
                 glowColor="rgba(64, 224, 208, 0.3)" 
                 speedScale={0.2} 
             />
+            <Header />
 
             {view === 'welcome' && (
                 <div className="audit-stage center-flex">
@@ -193,22 +197,33 @@ function App() {
                         </div>
 
                         <div className="question-list">
-                            {KRITERIA_5R[currentStep].questions.map((q, idx) => (
-                                <div key={idx} className="question-item">
-                                    <div className="question-text">{q}</div>
-                                    <div className="score-selector">
-                                        {[1, 2, 3, 4, 5].map(v => (
-                                            <button 
-                                                key={v}
-                                                className={`score-btn ${scores[KRITERIA_5R[currentStep].name][idx] === v ? 'selected' : ''}`}
-                                                onClick={() => handleScoreChange(KRITERIA_5R[currentStep].name, idx, v)}
-                                            >
-                                                {v}
-                                            </button>
-                                        ))}
+                            {KRITERIA_5R[currentStep].questions.map((q, idx) => {
+                                const currentScore = scores[KRITERIA_5R[currentStep].name][idx];
+                                return (
+                                    <div key={idx} className="question-item-container">
+                                        <div className="question-item">
+                                            <div className="question-text">{q.text}</div>
+                                            <div className="score-selector">
+                                                {[1, 2, 3, 4, 5].map(v => (
+                                                    <button 
+                                                        key={v}
+                                                        className={`score-btn ${currentScore === v ? 'selected' : ''}`}
+                                                        onClick={() => handleScoreChange(KRITERIA_5R[currentStep].name, idx, v)}
+                                                    >
+                                                        {v}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {currentScore > 0 && (
+                                            <div className="score-description">
+                                                <SparklesIcon />
+                                                <span>{q.descriptions[currentScore - 1]}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         <div className="wizard-footer">
@@ -223,6 +238,7 @@ function App() {
                                 <button 
                                     className="primary-button"
                                     onClick={() => setCurrentStep(prev => prev + 1)}
+                                    disabled={!isStepComplete}
                                 >
                                     Next Category
                                 </button>
@@ -230,6 +246,7 @@ function App() {
                                 <button 
                                     className="primary-button finish-btn"
                                     onClick={calculateResults}
+                                    disabled={!isStepComplete}
                                 >
                                     Submit Audit
                                 </button>

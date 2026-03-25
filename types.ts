@@ -21,9 +21,14 @@ export interface AuditSession {
   timestamp: number;
 }
 
+export interface Question {
+  text: string;
+  descriptions: string[]; // 5 descriptions for scores 1-5
+}
+
 export interface AuditCategory {
   name: string;
-  questions: string[];
+  questions: Question[];
 }
 
 /**
