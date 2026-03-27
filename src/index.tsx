@@ -22,7 +22,8 @@ import {
     ArrowUpIcon, 
     GridIcon,
     CodeIcon,
-    FileTextIcon
+    FileTextIcon,
+    AppLogo
 } from './components/Icons';
 
 function App() {
@@ -227,7 +228,13 @@ function App() {
             {view === 'welcome' && (
                 <div className="audit-stage center-flex">
                     <div className="hero-content">
-                        <div className="badge">5R COMPLIANCE</div>
+                        <div className="app-logo-container">
+                            <AppLogo />
+                        </div>
+                        <div className="badge">
+                            <SparklesIcon />
+                            5R COMPLIANCE
+                        </div>
                         <h1>5R Internal Audit</h1>
                         <p>Warehouse RM Technical & FG Herbisida</p>
                         
@@ -343,7 +350,13 @@ function App() {
                     <div className="results-container">
                         <div className="results-header">
                             <div className="summary-info">
-                                <span className="badge">LAPORAN AUDIT 5R</span>
+                                <div className="app-logo-container" style={{ justifyContent: 'flex-start', marginBottom: '8px' }}>
+                                    <AppLogo width="24" height="24" />
+                                </div>
+                                <div className="badge">
+                                    <SparklesIcon />
+                                    LAPORAN AUDIT 5R
+                                </div>
                                 <h1>{currentSession.area}</h1>
                                 <div className="meta-grid">
                                     <div className="meta-item">
