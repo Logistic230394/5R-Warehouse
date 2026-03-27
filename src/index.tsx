@@ -236,25 +236,35 @@ function App() {
                             5R COMPLIANCE
                         </div>
                         <h1>5R Internal Audit</h1>
-                        <p>Warehouse RM Technical & FG Herbisida</p>
+                        <p>FRONT WAREHOUSE AREA</p>
                         
                         <div className="audit-setup-card">
                             <div className="input-group">
                                 <label>Auditor Name</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter your name" 
+                                <select 
                                     value={auditorName} 
                                     onChange={(e) => setAuditorName(e.target.value)}
-                                />
+                                >
+                                    <option value="">Select Auditor...</option>
+                                    <option value="Eka Yunita">Eka Yunita</option>
+                                    <option value="Wantoro">Wantoro</option>
+                                    <option value="Angga Pratama">Angga Pratama</option>
+                                    <option value="Adin">Adin</option>
+                                    <option value="Gatot">Gatot</option>
+                                    <option value="Hadijah">Hadijah</option>
+                                    <option value="Fadly">Fadly</option>
+                                    <option value="Badai">Badai</option>
+                                </select>
                             </div>
                             <div className="input-group">
                                 <label>Audit Area</label>
                                 <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
                                     <option value="">Select Area...</option>
                                     <option value="WH RM Technical">WH RM Technical</option>
-                                    <option value="FG Herbisida">FG Herbisida</option>
-                                    <option value="Office">Office</option>
+                                    <option value="WH FG Herbisida">WH FG Herbisida</option>
+                                    <option value="WH Office">WH Office</option>
+                                    <option value="WH FG Insek">WH FG Insek</option>
+                                    <option value="WH FG Technical">WH FG Technical</option>
                                 </select>
                             </div>
                             <button 
@@ -442,6 +452,10 @@ function App() {
                     </div>
                 </div>
             )}
+
+            <footer className="app-footer">
+                © 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia
+            </footer>
         </div>
 
         <SideDrawer 

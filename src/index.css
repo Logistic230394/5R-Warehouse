@@ -236,6 +236,17 @@ body, html {
 .close-button { background: transparent; border: none; color: white; font-size: 2rem; cursor: pointer; transition: 0.2s; }
 .close-button:hover { color: var(--accent); transform: scale(1.1); }
 
+.app-footer {
+    padding: 16px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(64, 224, 208, 0.1);
+    z-index: 20;
+    backdrop-filter: blur(5px);
+    background: rgba(0, 77, 77, 0.2);
+}
+
 @media (max-width: 900px) {
     .performance-visual-section { grid-template-columns: 1fr; }
     .meta-grid { grid-template-columns: repeat(2, 1fr); }
