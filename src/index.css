@@ -224,9 +224,74 @@ body, html {
 }
 .outline-button:hover { background: rgba(64, 224, 208, 0.1); border-color: var(--accent); }
 
+.outline-button.delete-action {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+}
+
+.outline-button.delete-action:hover {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: #f87171;
+}
+
 
 /* History Drawer */
 .history-list { display: flex; flex-direction: column; gap: 16px; }
+
+.history-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
+    opacity: 0.8;
+}
+
+.filter-group select, .filter-group input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.clear-filters-btn {
+    background: transparent;
+    border: 1px solid #f87171;
+    color: #f87171;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.clear-filters-btn:hover {
+    background: rgba(248, 113, 113, 0.1);
+}
+
 .history-card {
     background: rgba(64, 224, 208, 0.05); border: 1px solid rgba(64, 224, 208, 0.1);
     padding: 16px; border-radius: 16px; cursor: pointer; transition: 0.2s;

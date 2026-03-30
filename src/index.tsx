@@ -32,6 +32,7 @@ import {
     GridIcon,
     CodeIcon,
     FileTextIcon,
+    TrashIcon,
     AppLogo
 } from './components/Icons';
 
@@ -48,6 +49,11 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chartSize, setChartSize] = useState(400);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Filter states
+  const [filterArea, setFilterArea] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
 
   // Load sessions from localStorage on mount
   useEffect(() => {
@@ -261,6 +267,15 @@ function App() {
   };
 
   const isStepComplete = scores[KRITERIA_5R[currentStep]?.name]?.every(s => s > 0);
+
+  const uniqueAreas = Array.from(new Set(sessions.map(s => s.area)));
+  const filteredSessions = sessions.filter(s => {
+    const matchesArea = filterArea === '' || s.area === filterArea;
+    const sessionDate = new Date(s.timestamp);
+    const matchesStartDate = filterStartDate === '' || sessionDate >= new Date(filterStartDate);
+    const matchesEndDate = filterEndDate === '' || sessionDate <= new Date(filterEndDate + 'T23:59:59');
+    return matchesArea && matchesStartDate && matchesEndDate;
+  });
 
   return (
     <>
@@ -505,6 +520,9 @@ function App() {
                             <button className="outline-button" onClick={downloadPDF}>
                                 <FileTextIcon /> Ekspor PDF
                             </button>
+                            <button className="outline-button delete-action" onClick={() => deleteSession(currentSession.id)}>
+                                <TrashIcon /> Hapus Audit
+                            </button>
                             <button className="outline-button" onClick={() => setDrawerOpen(true)}>
                                 <GridIcon /> Riwayat
                             </button>
@@ -523,11 +541,55 @@ function App() {
             onClose={() => setDrawerOpen(false)} 
             title="Audit History"
         >
+            <div className="history-filters">
+                <div className="filter-group">
+                    <label>Filter by Area</label>
+                    <select value={filterArea} onChange={(e) => setFilterArea(e.target.value)}>
+                        <option value="">All Areas</option>
+                        {uniqueAreas.map(area => (
+                            <option key={area} value={area}>{area}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="filter-row">
+                    <div className="filter-group">
+                        <label>Start Date</label>
+                        <input 
+                            type="date" 
+                            value={filterStartDate} 
+                            onChange={(e) => setFilterStartDate(e.target.value)} 
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>End Date</label>
+                        <input 
+                            type="date" 
+                            value={filterEndDate} 
+                            onChange={(e) => setFilterEndDate(e.target.value)} 
+                        />
+                    </div>
+                </div>
+                {(filterArea || filterStartDate || filterEndDate) && (
+                    <button 
+                        className="clear-filters-btn"
+                        onClick={() => {
+                            setFilterArea('');
+                            setFilterStartDate('');
+                            setFilterEndDate('');
+                        }}
+                    >
+                        Clear Filters
+                    </button>
+                )}
+            </div>
+
             <div className="history-list">
-                {sessions.length === 0 ? (
-                    <div className="empty-history">No past audits recorded.</div>
+                {filteredSessions.length === 0 ? (
+                    <div className="empty-history">
+                        {sessions.length === 0 ? "No past audits recorded." : "No audits match your filters."}
+                    </div>
                 ) : (
-                    sessions.map(s => (
+                    filteredSessions.map(s => (
                         <div key={s.id} className="history-card" onClick={() => { setCurrentSession(s); setDrawerOpen(false); setView('results'); }}>
                             <div className="h-header">
                                 <strong>{s.area}</strong>
