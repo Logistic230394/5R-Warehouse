@@ -292,11 +292,7 @@ function App() {
                 <div className="audit-stage center-flex">
                     <div className="hero-content">
                         <div className="app-logo-container">
-                            <AppLogo />
-                        </div>
-                        <div className="badge">
-                            <SparklesIcon />
-                            5R COMPLIANCE
+                            <img src="/logo.png" alt="Logo" className="welcome-logo" referrerPolicy="no-referrer" />
                         </div>
                         <h1>5R Internal Audit</h1>
                         <p>FRONT WAREHOUSE AREA</p>
@@ -532,7 +528,7 @@ function App() {
             )}
 
             <footer className="app-footer">
-                © 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia
+                <span>© 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia</span>
             </footer>
         </div>
 
