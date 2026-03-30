@@ -8,6 +8,15 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { 
+    AreaChart, 
+    Area, 
+    XAxis, 
+    YAxis, 
+    CartesianGrid, 
+    Tooltip, 
+    ResponsiveContainer 
+} from 'recharts';
 
 import { AuditSession, AuditCategory } from './types';
 import { KRITERIA_5R } from './constants';
@@ -39,6 +48,29 @@ function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chartSize, setChartSize] = useState(400);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Load sessions from localStorage on mount
+  useEffect(() => {
+    const savedSessions = localStorage.getItem('audit_sessions');
+    if (savedSessions) {
+      try {
+        const parsed = JSON.parse(savedSessions);
+        // Filter sessions older than 3 months (90 days)
+        const threeMonthsAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+        const filtered = parsed.filter((s: AuditSession) => s.timestamp > threeMonthsAgo);
+        setSessions(filtered);
+      } catch (e) {
+        console.error("Failed to parse saved sessions", e);
+      }
+    }
+  }, []);
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    if (sessions.length > 0) {
+        localStorage.setItem('audit_sessions', JSON.stringify(sessions));
+    }
+  }, [sessions]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -155,6 +187,12 @@ function App() {
                         visualSection.style.display = 'grid';
                         visualSection.style.gridTemplateColumns = '1fr 1fr';
                         visualSection.style.gap = '32px';
+
+                        // Ensure trend card is full width in PDF too
+                        const trendCard = visualSection.querySelector('.trend-card') as HTMLElement;
+                        if (trendCard) {
+                            trendCard.style.gridColumn = '1 / -1';
+                        }
                     }
                     
                     // Force header to horizontal layout
@@ -209,6 +247,16 @@ function App() {
         console.error("PDF generation failed", error);
     } finally {
         setIsLoading(false);
+    }
+  };
+
+  const deleteSession = (id: string) => {
+    if (window.confirm('Hapus rekaman audit ini?')) {
+        setSessions(prev => prev.filter(s => s.id !== id));
+        if (currentSession?.id === id) {
+            setCurrentSession(null);
+            setView('welcome');
+        }
     }
   };
 
@@ -390,6 +438,18 @@ function App() {
                         </div>
 
                         <div className="performance-visual-section">
+                            <div className="visual-card trend-card full-width">
+                                <div className="section-header">
+                                    <SparklesIcon className="spin-icon" />
+                                    <h3>Tren Performa (3 Bulan Terakhir)</h3>
+                                </div>
+                                <div className="trend-wrapper">
+                                    <TrendChart sessions={sessions} currentArea={currentSession.area} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="performance-visual-section">
                             <div className="visual-card radar-card">
                                 <div className="section-header">
                                     <SparklesIcon />
@@ -468,10 +528,19 @@ function App() {
                     <div className="empty-history">No past audits recorded.</div>
                 ) : (
                     sessions.map(s => (
-                        <div key={s.id} className="history-card" onClick={() => { setCurrentSession(s); setDrawerOpen(false); }}>
+                        <div key={s.id} className="history-card" onClick={() => { setCurrentSession(s); setDrawerOpen(false); setView('results'); }}>
                             <div className="h-header">
                                 <strong>{s.area}</strong>
-                                <span>{s.totalAverage.toFixed(2)}</span>
+                                <div className="h-actions">
+                                    <span>{s.totalAverage.toFixed(2)}</span>
+                                    <button 
+                                        className="delete-btn" 
+                                        onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
+                                        title="Hapus"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
                             </div>
                             <div className="h-meta">{s.date} • {s.auditor}</div>
                         </div>
@@ -482,6 +551,75 @@ function App() {
     </>
   );
 }
+
+const TrendChart = ({ sessions, currentArea }: { sessions: AuditSession[], currentArea: string }) => {
+    const areaData = sessions
+        .filter(s => s.area === currentArea)
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .map(s => ({
+            date: s.date.split('/').slice(0, 2).join('/'), // Short date
+            score: parseFloat(s.totalAverage.toFixed(2))
+        }));
+
+    if (areaData.length < 2) {
+        return (
+            <div className="empty-chart-msg">
+                <p>Data pembanding belum cukup.</p>
+                <span>Lakukan minimal 2 kali audit di area ini untuk melihat grafik tren.</span>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ width: '100%', height: 250 }}>
+            <ResponsiveContainer>
+                <AreaChart data={areaData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#40e0d0" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#40e0d0" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis 
+                        dataKey="date" 
+                        stroke="rgba(255,255,255,0.4)" 
+                        fontSize={10} 
+                        tickLine={false}
+                        axisLine={false}
+                        dy={10}
+                    />
+                    <YAxis 
+                        domain={[0, 5]} 
+                        stroke="rgba(255,255,255,0.4)" 
+                        fontSize={10} 
+                        tickLine={false}
+                        axisLine={false}
+                    />
+                    <Tooltip 
+                        contentStyle={{ 
+                            backgroundColor: '#002626', 
+                            border: '1px solid rgba(64, 224, 208, 0.2)',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            color: '#fff'
+                        }}
+                        itemStyle={{ color: '#40e0d0' }}
+                    />
+                    <Area 
+                        type="monotone" 
+                        dataKey="score" 
+                        stroke="#40e0d0" 
+                        fillOpacity={1} 
+                        fill="url(#colorScore)" 
+                        strokeWidth={3}
+                        animationDuration={1500}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};
 
 const rootElement = document.getElementById('root');
 if (rootElement) {

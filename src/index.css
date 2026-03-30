@@ -182,6 +182,26 @@ body, html {
     padding: 32px; border-radius: 24px; backdrop-filter: blur(20px);
     box-shadow: 0 10px 30px rgba(0, 77, 77, 0.2);
 }
+.visual-card.full-width {
+    grid-column: 1 / -1;
+}
+.trend-wrapper {
+    padding: 10px 0;
+}
+.empty-chart-msg {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    border: 1px dashed var(--border);
+}
+.empty-chart-msg p { font-weight: 600; margin-bottom: 4px; color: var(--accent); }
+.empty-chart-msg span { font-size: 0.8rem; }
 .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; color: var(--accent); opacity: 0.8; }
 .section-header h3 { margin: 0; font-size: 1.1rem; color: white; }
 
@@ -214,7 +234,27 @@ body, html {
 .history-card:hover { transform: translateX(5px); background: rgba(64, 224, 208, 0.1); }
 .h-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .h-header strong { color: var(--accent); }
+.h-actions { display: flex; align-items: center; gap: 12px; }
 .h-header span { font-weight: 700; color: white; }
+.delete-btn {
+    background: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: 0.2s;
+}
+.delete-btn:hover {
+    background: #f87171;
+    color: white;
+}
 .h-meta { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
 
 /* Animation Overrides */
