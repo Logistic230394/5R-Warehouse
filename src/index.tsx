@@ -32,8 +32,7 @@ import {
     GridIcon,
     CodeIcon,
     FileTextIcon,
-    TrashIcon,
-    AppLogo
+    TrashIcon
 } from './components/Icons';
 
 function App() {
@@ -292,7 +291,7 @@ function App() {
                 <div className="audit-stage center-flex">
                     <div className="hero-content">
                         <div className="app-logo-container">
-                            <AppLogo />
+                            <img src="/logo.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
                         </div>
                         <div className="badge">
                             <SparklesIcon />
@@ -423,9 +422,9 @@ function App() {
                     <div className="results-container">
                         <div className="results-header">
                             <div className="summary-info">
-                                <div className="app-logo-container" style={{ justifyContent: 'flex-start', marginBottom: '8px' }}>
-                                    <AppLogo width="24" height="24" />
-                                </div>
+                            <div className="app-logo-container" style={{ justifyContent: 'flex-start', marginBottom: '8px' }}>
+                                <img src="/logo.png" alt="Logo" className="app-result-logo" referrerPolicy="no-referrer" />
+                            </div>
                                 <div className="badge">
                                     <SparklesIcon />
                                     LAPORAN AUDIT 5R
@@ -532,7 +531,15 @@ function App() {
             )}
 
             <footer className="app-footer">
-                © 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia
+                <div className="footer-content">
+                    <span className="footer-text">© 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia</span>
+                    <img 
+                        src="/615b9d00c0f6a06f9fd3c92773f6ef9590bb9f591637861792-removebg-preview.png" 
+                        alt="Secondary Logo" 
+                        className="footer-logo" 
+                        referrerPolicy="no-referrer"
+                    />
+                </div>
             </footer>
         </div>
 

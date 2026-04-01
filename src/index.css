@@ -57,6 +57,29 @@ body, html {
     margin-bottom: 12px;
     display: flex; justify-content: center;
 }
+.app-main-logo {
+    max-width: 140px;
+    height: auto;
+    filter: drop-shadow(0 0 15px rgba(64, 224, 208, 0.3));
+    margin-bottom: 8px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: logoEntrance 1.2s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes logoEntrance {
+    0% { opacity: 0; transform: translateY(20px) scale(0.8); filter: blur(10px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.app-main-logo:hover {
+    transform: scale(1.08) rotate(2deg);
+    filter: drop-shadow(0 0 20px rgba(64, 224, 208, 0.5));
+}
+
+.app-result-logo {
+    max-width: 48px;
+    height: auto;
+    filter: drop-shadow(0 0 5px rgba(64, 224, 208, 0.2));
+}
 .hero-content h1 { 
     font-size: 3.5rem; font-weight: 800; margin: 0; letter-spacing: -0.03em; 
     text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); 
@@ -342,14 +365,34 @@ body, html {
 .close-button:hover { color: var(--accent); transform: scale(1.1); }
 
 .app-footer {
-    padding: 16px;
-    text-align: center;
+    padding: 8px 24px;
     font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.4);
     border-top: 1px solid rgba(64, 224, 208, 0.1);
     z-index: 20;
     backdrop-filter: blur(5px);
     background: rgba(0, 77, 77, 0.2);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.footer-logo {
+    height: 32px;
+    width: auto;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+    filter: brightness(0) invert(1); /* Make it white/monochrome to match footer */
+}
+
+.footer-logo:hover {
+    opacity: 1;
 }
 
 @media (max-width: 900px) {
@@ -375,6 +418,16 @@ body, html {
     .meta-grid { grid-template-columns: 1fr; gap: 16px; }
     .total-score-box { text-align: center; width: 100%; border-top: 1px solid var(--border); padding-top: 20px; }
     .score-val { font-size: 3.5rem; }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .footer-logo {
+        height: 24px;
+    }
     
     .visual-card { padding: 20px; }
     .radar-wrapper { overflow-x: auto; }
