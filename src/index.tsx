@@ -533,6 +533,12 @@ function App() {
             <footer className="app-footer">
                 <div className="footer-content">
                     <span className="footer-text">© 2026 Dept. Plant Logistic | PT Inti Everspring Indonesia</span>
+                    <img 
+                        src="https://i.imgur.com/StCTp3Y.png" 
+                        alt="IEI Logo" 
+                        className="footer-logo-secondary" 
+                        referrerPolicy="no-referrer"
+                    />
                 </div>
             </footer>
         </div>
