@@ -109,6 +109,21 @@ body, html {
 }
 .input-group input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(64, 224, 208, 0.3); }
 
+.login-error-msg {
+    color: #ff4d4d;
+    font-size: 0.85rem;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
 .primary-button {
     background: var(--primary); color: #004d4d; border: none; padding: 16px;
     border-radius: 12px; font-weight: 700; cursor: pointer;

@@ -290,3 +290,14 @@ export const INITIAL_PLACEHOLDERS = [
     "Office Main",
     "Loading Dock A"
 ];
+
+export const AUDITOR_PASSWORDS: Record<string, string> = {
+    "Eka Yunita": "11142",
+    "Wantoro": "11093",
+    "Angga Pratama": "11181",
+    "Adin": "11263",
+    "Gatot": "11230",
+    "Hadijah": "11128",
+    "Fadly": "11261",
+    "Badai": "15832"
+};

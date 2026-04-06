@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 
 import { AuditSession, AuditCategory } from './types';
-import { KRITERIA_5R } from './constants';
+import { KRITERIA_5R, AUDITOR_PASSWORDS } from './constants';
 import { generateId } from './utils';
 
 import DottedGlowBackground from './components/DottedGlowBackground';
@@ -38,6 +38,8 @@ import {
 function App() {
   const [view, setView] = useState<'welcome' | 'form' | 'results'>('welcome');
   const [auditorName, setAuditorName] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [auditArea, setAuditArea] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [scores, setScores] = useState<Record<string, number[]>>({});
@@ -94,7 +96,14 @@ function App() {
   }, []);
 
   const startAudit = () => {
-    if (!auditorName || !auditArea) return;
+    if (!auditorName || !auditArea || !password) return;
+    
+    if (AUDITOR_PASSWORDS[auditorName] !== password) {
+        setLoginError('Invalid password for selected auditor.');
+        return;
+    }
+
+    setLoginError('');
     const initialScores: Record<string, number[]> = {};
     KRITERIA_5R.forEach(cat => {
         initialScores[cat.name] = cat.questions.map(() => 0); // Start with 0 (unscored)
@@ -319,6 +328,19 @@ function App() {
                                 </select>
                             </div>
                             <div className="input-group">
+                                <label>Password</label>
+                                <input 
+                                    type="password" 
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        setLoginError('');
+                                    }}
+                                />
+                            </div>
+                            {loginError && <div className="login-error-msg">{loginError}</div>}
+                            <div className="input-group">
                                 <label>Audit Area</label>
                                 <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
                                     <option value="">Select Area...</option>
@@ -332,7 +354,7 @@ function App() {
                             <button 
                                 className="primary-button" 
                                 onClick={startAudit}
-                                disabled={!auditorName || !auditArea}
+                                disabled={!auditorName || !auditArea || !password}
                             >
                                 Start New Audit
                             </button>
