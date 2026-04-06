@@ -39,8 +39,10 @@ function App() {
   const [view, setView] = useState<'welcome' | 'form' | 'results'>('welcome');
   const [auditorName, setAuditorName] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [auditArea, setAuditArea] = useState('');
+  const [auditDate, setAuditDate] = useState(new Date().toISOString().split('T')[0]);
   const [currentStep, setCurrentStep] = useState(0);
   const [scores, setScores] = useState<Record<string, number[]>>({});
   const [sessions, setSessions] = useState<AuditSession[]>([]);
@@ -95,15 +97,19 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const startAudit = () => {
-    if (!auditorName || !auditArea || !password) return;
-    
-    if (AUDITOR_PASSWORDS[auditorName] !== password) {
+  const handleLogin = () => {
+    if (!auditorName || !password) return;
+    if (AUDITOR_PASSWORDS[auditorName] === password) {
+        setIsLoggedIn(true);
+        setLoginError('');
+    } else {
         setLoginError('Invalid password for selected auditor.');
-        return;
     }
+  };
 
-    setLoginError('');
+  const startAudit = () => {
+    if (!isLoggedIn || !auditArea || !auditDate) return;
+    
     const initialScores: Record<string, number[]> = {};
     KRITERIA_5R.forEach(cat => {
         initialScores[cat.name] = cat.questions.map(() => 0); // Start with 0 (unscored)
@@ -137,7 +143,7 @@ function App() {
         id: generateId(),
         auditor: auditorName,
         area: auditArea,
-        date: new Date().toLocaleDateString(),
+        date: auditDate,
         scores: scores,
         averages: categoryAverages,
         totalAverage: totalAverage,
@@ -310,54 +316,87 @@ function App() {
                         <p>FRONT WAREHOUSE AREA</p>
                         
                         <div className="audit-setup-card">
-                            <div className="input-group">
-                                <label>Auditor Name</label>
-                                <select 
-                                    value={auditorName} 
-                                    onChange={(e) => setAuditorName(e.target.value)}
-                                >
-                                    <option value="">Select Auditor...</option>
-                                    <option value="Eka Yunita">Eka Yunita</option>
-                                    <option value="Wantoro">Wantoro</option>
-                                    <option value="Angga Pratama">Angga Pratama</option>
-                                    <option value="Adin">Adin</option>
-                                    <option value="Gatot">Gatot</option>
-                                    <option value="Hadijah">Hadijah</option>
-                                    <option value="Fadly">Fadly</option>
-                                    <option value="Badai">Badai</option>
-                                </select>
-                            </div>
-                            <div className="input-group">
-                                <label>Password</label>
-                                <input 
-                                    type="password" 
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-                                        setLoginError('');
-                                    }}
-                                />
-                            </div>
-                            {loginError && <div className="login-error-msg">{loginError}</div>}
-                            <div className="input-group">
-                                <label>Audit Area</label>
-                                <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
-                                    <option value="">Select Area...</option>
-                                    <option value="WH RM Technical">WH RM Technical</option>
-                                    <option value="WH FG Herbisida">WH FG Herbisida</option>
-                                    <option value="WH Office">WH Office</option>
-                                    <option value="WH FG Insek">WH FG Insek</option>
-                                    <option value="WH FG Technical">WH FG Technical</option>
-                                </select>
-                            </div>
-                            <button 
-                                className="primary-button" 
-                                onClick={startAudit}
-                                disabled={!auditorName || !auditArea || !password}
-                            >
-                                Start New Audit
-                            </button>
+                            {!isLoggedIn ? (
+                                <>
+                                    <div className="input-group">
+                                        <label>Auditor Name</label>
+                                        <select 
+                                            value={auditorName} 
+                                            onChange={(e) => {
+                                                setAuditorName(e.target.value);
+                                                setLoginError('');
+                                            }}
+                                        >
+                                            <option value="">Select Auditor...</option>
+                                            <option value="Eka Yunita">Eka Yunita</option>
+                                            <option value="Wantoro">Wantoro</option>
+                                            <option value="Angga Pratama">Angga Pratama</option>
+                                            <option value="Adin">Adin</option>
+                                            <option value="Gatot">Gatot</option>
+                                            <option value="Hadijah">Hadijah</option>
+                                            <option value="Fadly">Fadly</option>
+                                            <option value="Badai">Badai</option>
+                                        </select>
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Password</label>
+                                        <input 
+                                            type="password" 
+                                            placeholder="Enter your password"
+                                            value={password}
+                                            onChange={(e) => {
+                                                setPassword(e.target.value);
+                                                setLoginError('');
+                                            }}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                                        />
+                                    </div>
+                                    {loginError && <div className="login-error-msg">{loginError}</div>}
+                                    <button 
+                                        className="primary-button" 
+                                        onClick={handleLogin}
+                                        disabled={!auditorName || !password}
+                                    >
+                                        Login
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="login-success-badge">
+                                        Logged in as <strong>{auditorName}</strong>
+                                        <button className="text-button" onClick={() => {
+                                            setIsLoggedIn(false);
+                                            setPassword('');
+                                        }}>Change</button>
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Audit Area</label>
+                                        <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
+                                            <option value="">Select Area...</option>
+                                            <option value="WH RM Technical">WH RM Technical</option>
+                                            <option value="WH FG Herbisida">WH FG Herbisida</option>
+                                            <option value="WH Office">WH Office</option>
+                                            <option value="WH FG Insek">WH FG Insek</option>
+                                            <option value="WH FG Technical">WH FG Technical</option>
+                                        </select>
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Audit Date</label>
+                                        <input 
+                                            type="date" 
+                                            value={auditDate}
+                                            onChange={(e) => setAuditDate(e.target.value)}
+                                        />
+                                    </div>
+                                    <button 
+                                        className="primary-button" 
+                                        onClick={startAudit}
+                                        disabled={!auditArea || !auditDate}
+                                    >
+                                        Start New Audit
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
