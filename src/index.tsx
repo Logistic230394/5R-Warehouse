@@ -6,6 +6,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { 
@@ -302,8 +303,16 @@ function App() {
                 speedScale={0.2} 
             />
 
-            {view === 'welcome' && (
-                <div className="audit-stage center-flex">
+            <AnimatePresence mode="wait">
+        {view === 'welcome' && (
+          <motion.div 
+            key="welcome"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
+            className="audit-stage center-flex"
+          >
                     <div className="hero-content">
                         <div className="app-logo-container">
                             <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
@@ -353,13 +362,15 @@ function App() {
                                         />
                                     </div>
                                     {loginError && <div className="login-error-msg">{loginError}</div>}
-                                    <button 
+                                    <motion.button 
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
                                         className="primary-button" 
                                         onClick={handleLogin}
                                         disabled={!auditorName || !password}
                                     >
                                         Login
-                                    </button>
+                                    </motion.button>
                                 </>
                             ) : (
                                 <>
@@ -389,22 +400,31 @@ function App() {
                                             onChange={(e) => setAuditDate(e.target.value)}
                                         />
                                     </div>
-                                    <button 
+                                    <motion.button 
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
                                         className="primary-button" 
                                         onClick={startAudit}
                                         disabled={!auditArea || !auditDate}
                                     >
                                         Start New Audit
-                                    </button>
+                                    </motion.button>
                                 </>
                             )}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
 
             {view === 'form' && (
-                <div className="audit-stage">
+                <motion.div 
+                    key="form"
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+                    className="audit-stage"
+                >
                     <div className="form-wizard">
                         <div className="wizard-header">
                             <div className="step-indicator">
@@ -476,11 +496,19 @@ function App() {
                             )}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
 
             {view === 'results' && currentSession && (
-                <div className="audit-stage results-view" ref={resultsRef}>
+                <motion.div 
+                    key="results"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.05 }}
+                    transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
+                    className="audit-stage results-view" 
+                    ref={resultsRef}
+                >
                     <div className="results-container">
                         <div className="results-header">
                             <div className="summary-info">
@@ -589,8 +617,9 @@ function App() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
+      </AnimatePresence>
 
             <footer className="app-footer">
                 <div className="footer-content">

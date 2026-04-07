@@ -5,6 +5,7 @@
 */
 
 import React from 'react';
+import { motion } from 'motion/react';
 
 interface RadarChartProps {
   data: { label: string; value: number }[];
@@ -67,7 +68,10 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
       })}
 
       {/* Data polygon */}
-      <polygon
+      <motion.polygon
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
         points={points}
         fill="rgba(45, 212, 191, 0.3)"
         stroke="#2dd4bf"
@@ -78,8 +82,11 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
       {data.map((d, i) => {
         const coords = getCoordinates(i, maxValue + 0.6);
         return (
-          <text
+          <motion.text
             key={i}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 + i * 0.1 }}
             x={coords.x}
             y={coords.y}
             textAnchor="middle"
@@ -89,7 +96,7 @@ const RadarChart: React.FC<RadarChartProps> = ({ data, size = 300 }) => {
             fontWeight="600"
           >
             {d.label}
-          </text>
+          </motion.text>
         );
       })}
     </svg>
