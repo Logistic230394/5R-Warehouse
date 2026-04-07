@@ -299,5 +299,6 @@ export const AUDITOR_PASSWORDS: Record<string, string> = {
     "Gatot": "11230",
     "Hadijah": "11128",
     "Fadly": "11261",
-    "Badai": "15832"
+    "Badai": "15832",
+    "Visitor": "123456"
 };

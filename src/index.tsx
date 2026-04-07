@@ -336,6 +336,7 @@ function App() {
                                             <option value="Hadijah">Hadijah</option>
                                             <option value="Fadly">Fadly</option>
                                             <option value="Badai">Badai</option>
+                                            <option value="Visitor">Visitor</option>
                                         </select>
                                     </div>
                                     <div className="input-group">
