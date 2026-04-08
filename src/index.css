@@ -19,8 +19,10 @@
 body, html {
     margin: 0; padding: 0;
     font-family: 'Inter', sans-serif;
-    background: #004d4d; /* Fallback */
-    background: var(--app-bg);
+    background: var(--app-bg), url('https://i.imgur.com/EAlmMgn.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: multiply;
     background-attachment: fixed;
     color: var(--text-primary);
     overflow: hidden;
