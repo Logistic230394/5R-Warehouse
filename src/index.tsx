@@ -26,7 +26,6 @@ import { generateId } from './utils';
 import DottedGlowBackground from './components/DottedGlowBackground';
 import SideDrawer from './components/SideDrawer';
 import RadarChart from './components/RadarChart';
-import Slideshow from './components/Slideshow';
 import { 
     ThinkingIcon, 
     SparklesIcon, 
@@ -314,20 +313,17 @@ function App() {
             transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
             className="audit-stage center-flex"
           >
-                    <div className="welcome-container">
-                        <div className="hero-content">
-                            <div className="app-logo-container">
-                                <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
-                            </div>
-                            <div className="badge">
-                                <SparklesIcon />
-                                5R COMPLIANCE
-                            </div>
-                            <h1>5R Internal Audit</h1>
-                            <p>FRONT WAREHOUSE AREA</p>
-                            <Slideshow />
+                    <div className="hero-content">
+                        <div className="app-logo-container">
+                            <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
                         </div>
-
+                        <div className="badge">
+                            <SparklesIcon />
+                            5R COMPLIANCE
+                        </div>
+                        <h1>5R Internal Audit</h1>
+                        <p>FRONT WAREHOUSE AREA</p>
+                        
                         <div className="audit-setup-card">
                             {!isLoggedIn ? (
                                 <>

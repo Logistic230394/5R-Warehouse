@@ -4,7 +4,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
 
 :root {
-    --app-bg: radial-gradient(circle at top left, #004d4d, #008080, #00b3b3);
+    --app-bg-gradient: radial-gradient(circle at top left, #004d4d, #008080, #00b3b3);
+    --app-bg-image: url('https://i.imgur.com/EAlmMgn.jpg');
     --text-primary: #ffffff;
     --text-secondary: #e0f2f1;
     --accent: #40e0d0;
@@ -19,10 +20,11 @@
 body, html {
     margin: 0; padding: 0;
     font-family: 'Inter', sans-serif;
-    background: var(--app-bg), url('https://i.imgur.com/EAlmMgn.jpeg');
+    background-color: #004d4d; /* Fallback */
+    background-image: var(--app-bg-gradient), var(--app-bg-image);
+    background-blend-mode: overlay;
     background-size: cover;
     background-position: center;
-    background-blend-mode: multiply;
     background-attachment: fixed;
     color: var(--text-primary);
     overflow: hidden;

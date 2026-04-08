@@ -30,3 +30,14 @@ export interface AuditCategory {
   name: string;
   questions: Question[];
 }
+
+/**
+ * Interface for artifact objects used in the application.
+ * Added to fix the import error in ArtifactCard.tsx.
+ */
+export interface Artifact {
+  id: string;
+  html: string;
+  styleName: string;
+  status: string;
+}
