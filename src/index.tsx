@@ -33,7 +33,8 @@ import {
     GridIcon,
     CodeIcon,
     FileTextIcon,
-    TrashIcon
+    TrashIcon,
+    HomeIcon
 } from './components/Icons';
 
 function App() {
@@ -387,108 +388,230 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.6, ease: [0.19, 1, 0.22, 1] }}
-            className="audit-stage center-flex"
+            className={`audit-stage ${!isLoggedIn ? 'center-flex' : ''}`}
+            style={{ width: '100%', maxWidth: isLoggedIn ? '1200px' : '500px', margin: '0 auto' }}
           >
-                    <div className="hero-content">
-                        <div className="app-logo-container">
-                            <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
+                    {!isLoggedIn ? (
+                        <div className="hero-content">
+                            <div className="app-logo-container">
+                                <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-main-logo" referrerPolicy="no-referrer" />
+                            </div>
+                            <div className="badge">
+                                <SparklesIcon />
+                                5R COMPLIANCE
+                            </div>
+                            <h1>5R Internal Audit</h1>
+                            <p>FRONT WAREHOUSE AREA</p>
+                            
+                            <div className="audit-setup-card">
+                                <div className="input-group">
+                                    <label>Auditor Name</label>
+                                    <select 
+                                        value={auditorName} 
+                                        onChange={(e) => {
+                                            setAuditorName(e.target.value);
+                                            setLoginError('');
+                                        }}
+                                    >
+                                        <option value="">Select Auditor...</option>
+                                        <option value="Eka Yunita">Eka Yunita</option>
+                                        <option value="Wantoro">Wantoro</option>
+                                        <option value="Angga Pratama">Angga Pratama</option>
+                                        <option value="Adin">Adin</option>
+                                        <option value="Gatot">Gatot</option>
+                                        <option value="Hadijah">Hadijah</option>
+                                        <option value="Fadly">Fadly</option>
+                                        <option value="Badai">Badai</option>
+                                        <option value="Visitor">Visitor</option>
+                                    </select>
+                                </div>
+                                <div className="input-group">
+                                    <label>Password</label>
+                                    <input 
+                                        type="password" 
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => {
+                                            setPassword(e.target.value);
+                                            setLoginError('');
+                                        }}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                                    />
+                                </div>
+                                {loginError && <div className="login-error-msg">{loginError}</div>}
+                                <motion.button 
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="primary-button" 
+                                    onClick={handleLogin}
+                                    disabled={!auditorName || !password}
+                                >
+                                    Login
+                                </motion.button>
+                            </div>
                         </div>
-                        <div className="badge">
-                            <SparklesIcon />
-                            5R COMPLIANCE
-                        </div>
-                        <h1>5R Internal Audit</h1>
-                        <p>FRONT WAREHOUSE AREA</p>
-                        
-                        <div className="audit-setup-card">
-                            {!isLoggedIn ? (
-                                <>
-                                    <div className="input-group">
-                                        <label>Auditor Name</label>
-                                        <select 
-                                            value={auditorName} 
-                                            onChange={(e) => {
-                                                setAuditorName(e.target.value);
-                                                setLoginError('');
-                                            }}
+                    ) : (
+                        <div className="dashboard-container" style={{ width: '100%' }}>
+                            {/* Dashboard header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: '32px', gap: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" style={{ height: '48px', width: 'auto', filter: 'drop-shadow(0 0 10px rgba(64, 224, 208, 0.3))' }} referrerPolicy="no-referrer" />
+                                    <div>
+                                        <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, background: 'linear-gradient(to right, #ffffff, #87ceeb)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', width: 'auto', textShadow: 'none' }}>Dashboard Internal Audit 5R</h1>
+                                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>Selamat datang kembali, {auditorName} • Manajemen Area Gudang Utama</p>
+                                    </div>
+                                </div>
+                                <div className="login-success-badge" style={{ margin: 0, padding: '8px 16px', backdropFilter: 'blur(10px)', background: 'rgba(64, 224, 208, 0.1)' }}>
+                                    Logged in as <strong>{auditorName}</strong>
+                                    <button className="text-button" style={{ marginLeft: '12px' }} onClick={() => {
+                                        setIsLoggedIn(false);
+                                        setPassword('');
+                                    }}>Logout</button>
+                                </div>
+                            </div>
+
+                            {/* Split layout: Setup Audit vs Previous Audits Dashboard */}
+                            <div className="dashboard-grid">
+                                
+                                {/* Start Audit Form */}
+                                <div className="audit-setup-card" style={{ marginTop: 0, padding: '32px', height: '100%', boxSizing: 'border-box' }}>
+                                    <div className="section-header" style={{ marginBottom: '16px' }}>
+                                        <SparklesIcon />
+                                        <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>Mulai Audit Baru</h3>
+                                    </div>
+                                    <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                                        Pilih salah satu area pergudangan serta tanggal pelaksanaan untuk memulai penilaian standarisasi 5S/5R.
+                                    </p>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '20px' }}>
+                                        <div className="input-group">
+                                            <label>Audit Area / Departemen</label>
+                                            <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
+                                                <option value="">Select Area...</option>
+                                                <option value="WH RM Technical">WH RM Technical</option>
+                                                <option value="WH FG Herbisida">WH FG Herbisida</option>
+                                                <option value="WH Office">WH Office</option>
+                                                <option value="WH FG Insek">WH FG Insek</option>
+                                                <option value="WH FG Technical">WH FG Technical</option>
+                                            </select>
+                                        </div>
+                                        <div className="input-group">
+                                            <label>Audit Date</label>
+                                            <input 
+                                                type="date" 
+                                                value={auditDate}
+                                                onChange={(e) => setAuditDate(e.target.value)}
+                                            />
+                                        </div>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="primary-button" 
+                                            style={{ marginTop: '12px' }}
+                                            onClick={startAudit}
+                                            disabled={!auditArea || !auditDate}
                                         >
-                                            <option value="">Select Auditor...</option>
-                                            <option value="Eka Yunita">Eka Yunita</option>
-                                            <option value="Wantoro">Wantoro</option>
-                                            <option value="Angga Pratama">Angga Pratama</option>
-                                            <option value="Adin">Adin</option>
-                                            <option value="Gatot">Gatot</option>
-                                            <option value="Hadijah">Hadijah</option>
-                                            <option value="Fadly">Fadly</option>
-                                            <option value="Badai">Badai</option>
-                                            <option value="Visitor">Visitor</option>
-                                        </select>
+                                            Mulai Evaluasi 5R
+                                        </motion.button>
                                     </div>
-                                    <div className="input-group">
-                                        <label>Password</label>
-                                        <input 
-                                            type="password" 
-                                            placeholder="Enter your password"
-                                            value={password}
-                                            onChange={(e) => {
-                                                setPassword(e.target.value);
-                                                setLoginError('');
-                                            }}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                                        />
+                                </div>
+
+                                {/* Previous Audits Performance Dashboard */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                    
+                                    {/* Stats cards */}
+                                    <div className="dashboard-stats-row">
+                                        
+                                        <div className="visual-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Total Audit Terlaksana</span>
+                                            <strong style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>{sessions.length}</strong>
+                                            <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Dalam 3 bulan terakhir</span>
+                                        </div>
+
+                                        <div className="visual-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.8 }}>Rata-Rata Skor Kumulatif</span>
+                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                                <strong style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', textShadow: '0 5px 15px rgba(0,0,0,0.3)' }}>
+                                                    {sessions.length > 0 
+                                                        ? (sessions.reduce((acc, s) => acc + s.totalAverage, 0) / sessions.length).toFixed(2)
+                                                        : '0.00'}
+                                                </strong>
+                                                <span style={{ fontSize: '1rem', opacity: 0.6 }}>/ 5.00</span>
+                                            </div>
+                                            <span style={{ 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 600, 
+                                                color: (sessions.length > 0 && (sessions.reduce((acc, s) => acc + s.totalAverage, 0) / sessions.length) >= 4) ? '#4ade80' : (sessions.length > 0 && (sessions.reduce((acc, s) => acc + s.totalAverage, 0) / sessions.length) >= 3) ? '#fbbf24' : '#f87171' 
+                                            }}>
+                                                Status: {sessions.length === 0 ? 'NOT AVAILABLE' : (sessions.reduce((acc, s) => acc + s.totalAverage, 0) / sessions.length) >= 4 ? 'SANGAT BAIK' : (sessions.reduce((acc, s) => acc + s.totalAverage, 0) / sessions.length) >= 3 ? 'CUKUP' : 'KURANG'}
+                                            </span>
+                                        </div>
+
                                     </div>
-                                    {loginError && <div className="login-error-msg">{loginError}</div>}
-                                    <motion.button 
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="primary-button" 
-                                        onClick={handleLogin}
-                                        disabled={!auditorName || !password}
-                                    >
-                                        Login
-                                    </motion.button>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="login-success-badge">
-                                        Logged in as <strong>{auditorName}</strong>
-                                        <button className="text-button" onClick={() => {
-                                            setIsLoggedIn(false);
-                                            setPassword('');
-                                        }}>Change</button>
+
+                                    {/* Previous Audits List */}
+                                    <div className="visual-card" style={{ padding: '24px' }}>
+                                        <div className="section-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <GridIcon />
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>Hasil Evaluasi Sebelumnya</h3>
+                                            </div>
+                                            {sessions.length > 0 && (
+                                                <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Klik baris untuk memuat rincian laporan</span>
+                                            )}
+                                        </div>
+
+                                        {sessions.length === 0 ? (
+                                            <div style={{ padding: '40px', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px dashed var(--border)', color: 'rgba(255,255,255,0.5)' }}>
+                                                Belum ada rekaman audit sebelumnya di database lokal.
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
+                                                {sessions.map(s => {
+                                                    const scoreVal = s.totalAverage;
+                                                    return (
+                                                        <div 
+                                                            key={s.id} 
+                                                            onClick={() => { setCurrentSession(s); setView('results'); }}
+                                                            className="prev-audit-row"
+                                                        >
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                                <strong style={{ fontSize: '0.95rem', color: '#fff' }}>{s.area}</strong>
+                                                                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>{s.date} • Oleh: {s.auditor}</span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                <div style={{ textAlign: 'right' }}>
+                                                                    <div style={{ fontSize: '1.1rem', fontWeight: 700, color: scoreVal >= 4 ? '#4ade80' : scoreVal >= 3 ? '#fbbf24' : '#f87171' }}>
+                                                                        {scoreVal.toFixed(2)}
+                                                                    </div>
+                                                                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.6 }}>Skor</div>
+                                                                </div>
+                                                                <button 
+                                                                    style={{ 
+                                                                        background: 'rgba(64, 224, 208, 0.1)', 
+                                                                        border: '1px solid rgba(64, 224, 208, 0.2)', 
+                                                                        color: 'var(--accent)', 
+                                                                        fontSize: '0.75rem', 
+                                                                        padding: '6px 12px', 
+                                                                        borderRadius: '8px',
+                                                                        cursor: 'pointer' 
+                                                                    }}
+                                                                >
+                                                                    Buka
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="input-group">
-                                        <label>Audit Area</label>
-                                        <select value={auditArea} onChange={(e) => setAuditArea(e.target.value)}>
-                                            <option value="">Select Area...</option>
-                                            <option value="WH RM Technical">WH RM Technical</option>
-                                            <option value="WH FG Herbisida">WH FG Herbisida</option>
-                                            <option value="WH Office">WH Office</option>
-                                            <option value="WH FG Insek">WH FG Insek</option>
-                                            <option value="WH FG Technical">WH FG Technical</option>
-                                        </select>
-                                    </div>
-                                    <div className="input-group">
-                                        <label>Audit Date</label>
-                                        <input 
-                                            type="date" 
-                                            value={auditDate}
-                                            onChange={(e) => setAuditDate(e.target.value)}
-                                        />
-                                    </div>
-                                    <motion.button 
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="primary-button" 
-                                        onClick={startAudit}
-                                        disabled={!auditArea || !auditDate}
-                                    >
-                                        Start New Audit
-                                    </motion.button>
-                                </>
-                            )}
+
+                                </div>
+
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </motion.div>
             )}
 
@@ -791,6 +914,9 @@ function App() {
                         </div>
 
                         <div className="actions-footer" data-html2canvas-ignore>
+                            <button className="outline-button" onClick={handleBackToWelcome} style={{ borderColor: 'var(--accent)', color: 'var(--accent)', marginRight: 'auto' }}>
+                                <HomeIcon style={{ width: '16px', height: '16px' }} /> Dashboard Interaktif
+                            </button>
                             <button className="outline-button" onClick={handleBackToWelcome}>
                                 <ArrowUpIcon style={{transform: 'rotate(-90deg)'}} /> {isSharedView ? "Buat Audit Baru" : "Audit Baru"}
                             </button>
