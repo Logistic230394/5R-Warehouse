@@ -59,6 +59,13 @@ function App() {
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
 
+  // Share & Email states
+  const [isSharedView, setIsSharedView] = useState(false);
+  const [selectedEmailPreset, setSelectedEmailPreset] = useState('gatot.satria@salimagro.com');
+  const [customEmail, setCustomEmail] = useState('');
+  const [emailNote, setEmailNote] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+
   // Load sessions from localStorage on mount
   useEffect(() => {
     const savedSessions = localStorage.getItem('audit_sessions');
@@ -97,6 +104,75 @@ function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Parse share parameters on load
+  useEffect(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareData = urlParams.get('share');
+      if (shareData) {
+        const decodedStr = decodeURIComponent(atob(shareData));
+        const parsedSession = JSON.parse(decodedStr);
+        setCurrentSession(parsedSession);
+        setView('results');
+        setIsSharedView(true);
+      }
+    } catch (e) {
+      console.error("Failed to decode shared session from URL", e);
+    }
+  }, []);
+
+  const generateShareUrl = (session: AuditSession) => {
+    try {
+      const jsonStr = JSON.stringify(session);
+      const base64 = btoa(encodeURIComponent(jsonStr));
+      return `${window.location.origin}${window.location.pathname}?share=${base64}`;
+    } catch (e) {
+      console.error("Failed to generate share URL", e);
+      return window.location.href;
+    }
+  };
+
+  const generateMailtoUrl = (session: AuditSession) => {
+    const toEmail = selectedEmailPreset === 'custom' ? customEmail : selectedEmailPreset;
+    const subject = `Laporan Hasil Audit 5R - ${session.area} - ${session.date} (Skor: ${session.totalAverage.toFixed(2)})`;
+    const shareUrl = generateShareUrl(session);
+    
+    const scoresDetail = Object.entries(session.averages)
+      .map(([cat, val]: [string, any]) => `  - ${cat}: ${val.toFixed(2)} / 5.00`)
+      .join('\n');
+
+    let body = `Yth. Kepala Departemen / Plant Manager,\n\n`;
+    body += `Berikut adalah laporan ringkas hasil Audit 5R Internal yang telah selesai dilaksanakan di area:\n\n`;
+    body += `INFORMASI DETAIL AUDIT:\n`;
+    body += `- Area / Departemen  : ${session.area}\n`;
+    body += `- Tanggal Audit      : ${session.date}\n`;
+    body += `- Auditor Pelaksana  : ${session.auditor}\n`;
+    body += `- Skor Rata-rata 5R  : ${session.totalAverage.toFixed(2)} / 5.00 (Status: ${session.totalAverage >= 4 ? 'Sangat Baik' : session.totalAverage >= 3 ? 'Cukup' : 'Kurang'})\n\n`;
+    
+    body += `RINCIAN PER KATEGORI:\n`;
+    body += `${scoresDetail}\n\n`;
+    
+    if (emailNote.trim()) {
+      body += `CATATAN / INSTRUKSI LAIN:\n`;
+      body += `"${emailNote.trim()}"\n\n`;
+    }
+    
+    body += `Buka link di bawah ini untuk melihat metrik pencapaian interaktif, grafik tren, visualisasi Radar Chart, dan detail lengkap penilaian:\n`;
+    body += `${shareUrl}\n\n`;
+    body += `Salam,\n`;
+    body += `${session.auditor}\n`;
+    body += `Dept. Plant Logistic | PT Inti Everspring Indonesia`;
+
+    return `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleBackToWelcome = () => {
+    setIsSharedView(false);
+    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.pushState({ path: cleanUrl }, '', cleanUrl);
+    setView('welcome');
+  };
 
   const handleLogin = () => {
     if (!auditorName || !password) return;
@@ -515,9 +591,16 @@ function App() {
                             <div className="app-logo-container" style={{ justifyContent: 'flex-start', marginBottom: '8px' }}>
                                 <img src="https://i.imgur.com/fLpYVpL.png" alt="Logo" className="app-result-logo" referrerPolicy="no-referrer" />
                             </div>
-                                <div className="badge">
-                                    <SparklesIcon />
-                                    LAPORAN AUDIT 5R
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                                    <div className="badge" style={{ marginBottom: 0 }}>
+                                        <SparklesIcon />
+                                        LAPORAN AUDIT 5R
+                                    </div>
+                                    {isSharedView && (
+                                        <div className="badge" style={{ marginBottom: 0, background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+                                            LINK BERSAMA (READ-ONLY)
+                                        </div>
+                                    )}
                                 </div>
                                 <h1>{currentSession.area}</h1>
                                 <div className="meta-grid">
@@ -599,9 +682,117 @@ function App() {
                             </div>
                         </div>
 
+                        <div className="performance-visual-section" data-html2canvas-ignore>
+                            <div className="visual-card full-width share-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div className="section-header">
+                                    <svg xmlns="http://www.w3.org/2500/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                    <h3>Bagikan Hasil Audit & Email Departemen</h3>
+                                </div>
+                                
+                                <p className="share-desc" style={{ fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.7)', margin: 0, lineHeight: '1.5' }}>
+                                    Koneksikan kepala departemen terkait untuk peninjauan hasil audit 5R. Anda dapat menyalin tautan interaktif atau mengirim laporan terformat langsung ke email kepala bidang.
+                                </p>
+
+                                <div className="share-grid border-t border-teal-950 pt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px', alignItems: 'start' }}>
+                                    
+                                    {/* Link generator and copy */}
+                                    <div className="share-column" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--accent)', fontWeight: 600 }}>1. Generate & Salin Link Interaktif</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>Tautan Reviewer:</label>
+                                            <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '12px', padding: '6px 12px', alignItems: 'center' }}>
+                                                <input 
+                                                    type="text" 
+                                                    readOnly 
+                                                    value={generateShareUrl(currentSession)}
+                                                    style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.85rem', width: '100%', outline: 'none', fontFamily: 'monospace' }}
+                                                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                                                />
+                                                <button 
+                                                    className="primary-button" 
+                                                    style={{ padding: '8px 16px', fontSize: '0.8rem', borderRadius: '8px', flexShrink: 0 }}
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(generateShareUrl(currentSession));
+                                                        setIsCopied(true);
+                                                        setTimeout(() => setIsCopied(false), 2000);
+                                                    }}
+                                                >
+                                                    {isCopied ? 'Copied ✓' : 'Salin Link'}
+                                                </button>
+                                            </div>
+                                            <span style={{ fontSize: '0.75rem', opacity: 0.6, lineHeight: '1.3' }}>
+                                                Siapapun yang menerima link ini dapat berinteraksi langsung dengan tabel dan grafik hasil audit tanpa perlu autentikasi.
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Email composer and sender */}
+                                    <div className="share-column" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--accent)', fontWeight: 600 }}>2. Kirim ke Department Head</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            
+                                            <div className="input-group" style={{ gap: '6px' }}>
+                                                <label style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>Penerima Laporan:</label>
+                                                <select 
+                                                    value={selectedEmailPreset} 
+                                                    onChange={(e) => {
+                                                        setSelectedEmailPreset(e.target.value);
+                                                        if (e.target.value !== 'custom') {
+                                                            setCustomEmail('');
+                                                        }
+                                                    }}
+                                                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 12px', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+                                                >
+                                                    <option value="gatot.satria@salimagro.com">Gatot Satria - Head Logistic (gatot.satria@salimagro.com)</option>
+                                                    <option value="Nur.Yadin@salimagro.com">Nur Yadin - SPV Warehouse (Nur.Yadin@salimagro.com)</option>
+                                                    <option value="ahmad.juproni@salimagro.com">Ahmad Juproni - Head Logistic (ahmad.juproni@salimagro.com)</option>
+                                                    <option value="custom">Kustom... (Input Email Manual)</option>
+                                                </select>
+                                            </div>
+
+                                            {selectedEmailPreset === 'custom' && (
+                                                <div className="input-group" style={{ gap: '6px' }}>
+                                                    <label style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>Alamat Email:</label>
+                                                    <input 
+                                                        type="email" 
+                                                        placeholder="nama@perusahaan.co.id" 
+                                                        value={customEmail}
+                                                        onChange={(e) => setCustomEmail(e.target.value)}
+                                                        style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 12px', color: '#fff', fontSize: '0.9rem', outline: 'none' }}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <div className="input-group" style={{ gap: '6px' }}>
+                                                <label style={{ fontSize: '0.8rem', opacity: 0.8, fontWeight: 500 }}>Catatan Tambahan (Optional):</label>
+                                                <textarea 
+                                                    placeholder="Tulis instruksi atau catatan khusus tindak lanjut di sini..." 
+                                                    value={emailNote}
+                                                    onChange={(e) => setEmailNote(e.target.value)}
+                                                    rows={2}
+                                                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 12px', color: '#fff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                                                />
+                                            </div>
+
+                                            <a 
+                                                href={generateMailtoUrl(currentSession)}
+                                                className="primary-button text-center" 
+                                                style={{ padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none', fontWeight: 700 }}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                                Kirim Email Laporan
+                                            </a>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="actions-footer" data-html2canvas-ignore>
-                            <button className="outline-button" onClick={() => setView('welcome')}>
-                                <ArrowUpIcon style={{transform: 'rotate(-90deg)'}} /> Audit Baru
+                            <button className="outline-button" onClick={handleBackToWelcome}>
+                                <ArrowUpIcon style={{transform: 'rotate(-90deg)'}} /> {isSharedView ? "Buat Audit Baru" : "Audit Baru"}
                             </button>
                             <button className="outline-button" onClick={downloadReport}>
                                 <CodeIcon /> Ekspor JSON
@@ -609,9 +800,11 @@ function App() {
                             <button className="outline-button" onClick={downloadPDF}>
                                 <FileTextIcon /> Ekspor PDF
                             </button>
-                            <button className="outline-button delete-action" onClick={() => deleteSession(currentSession.id)}>
-                                <TrashIcon /> Hapus Audit
-                            </button>
+                            {!isSharedView && (
+                                <button className="outline-button delete-action" onClick={() => deleteSession(currentSession.id)}>
+                                    <TrashIcon /> Hapus Audit
+                                </button>
+                            )}
                             <button className="outline-button" onClick={() => setDrawerOpen(true)}>
                                 <GridIcon /> Riwayat
                             </button>
